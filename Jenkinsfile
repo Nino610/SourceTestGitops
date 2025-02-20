@@ -45,6 +45,7 @@ pipeline {
 
                     sh "docker rmi ${DOCKER_IMAGE_NAME} -f"
                     sh "docker rmi ${DOCKER_IMAGE}:${version} -f"
+                    echo "build và push xong rồi"
                 }
             }
         }
