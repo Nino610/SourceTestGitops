@@ -43,27 +43,27 @@ pipeline {
                        app.push(version)
                     }
 
-                    sh "docker rmi ${DOCKER_IMAGE_NAME} -f"
-                    sh "docker rmi ${DOCKER_IMAGE}:${version} -f"
+                    // sh "docker rmi ${DOCKER_IMAGE_NAME} -f"
+                    // sh "docker rmi ${DOCKER_IMAGE}:${version} -f"
                     echo "build và push xong rồi"
                 }
             }
         }
 
-        // stage('Update value in helm-chart') {
-        //     steps {
-		// 		withCredentials([usernamePassword(credentialsId: 'github', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-		// 		sh """#!/bin/bash
-		// 			   [[ -d ${helmRepo} ]] && rm -r ${helmRepo}
-		// 			   git clone ${appConfigRepo} --branch ${appConfigBranch}
-		// 			   cd ${helmRepo}
-		// 			   sed -i 's|  tag: .*|  tag: "${version}"|' ${helmValueFile}
-		// 			   git add . ; git commit -m "Update to version ${version}";git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/Nino610/SourceTestGitops
-		// 			   cd ..
-		// 			   [[ -d ${helmRepo} ]] && rm -r ${helmRepo}
-		// 			   """		
-		// 		}				
-        //     }
-        // }
+        stage('Update value in helm-chart') {
+            steps {
+				withCredentials([usernamePassword(credentialsId: 'github', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+				sh """#!/bin/bash
+					   [[ -d ${helmRepo} ]] && rm -r ${helmRepo}
+					   git clone ${appConfigRepo} --branch ${appConfigBranch}
+					   cd ${helmRepo}
+					   sed -i 's|  tag: .*|  tag: "${version}"|' ${helmValueFile}
+					   git add . ; git commit -m "Update to version ${version}";git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/Nino610/SourceTestGitops
+					   cd ..
+					   [[ -d ${helmRepo} ]] && rm -r ${helmRepo}
+					   """		
+				}				
+            }
+        }
     }
 }
