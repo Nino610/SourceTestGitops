@@ -87,7 +87,8 @@ stage('Update value in helm-chart') {
         }
     }
 }
-
+        }
+}
 }
 
 
