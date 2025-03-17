@@ -1,10 +1,10 @@
 //pull config repo ok
 // update tag in config repo ok
 // not yet commit and push
-def appSourceRepo = 'https://github.com/Nino610/SourceTestGitops'
+def appSourceRepo = 'https://github.com/Nino610/SourceTestGitops.git'
 def appSourceBranch = 'main'
 
-def appConfigRepo = 'https://github.com/Nino610/ConfigTestGitops'
+def appConfigRepo = 'https://github.com/Nino610/ConfigTestGitops.git'
 def appConfigBranch = 'main'
 def helmRepo = "app-helmchart"
 def helmChart = "app-demo"
