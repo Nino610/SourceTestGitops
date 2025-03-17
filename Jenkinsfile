@@ -48,7 +48,7 @@ pipeline {
                 }
             }
         }
-        stage('Update value in helm-chart') {
+
 stage('Update value in helm-chart') {
     steps {
         withCredentials([usernamePassword(credentialsId: 'github', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
@@ -87,31 +87,6 @@ stage('Update value in helm-chart') {
         }
     }
 }
-        }
-}
-}
 
-
-//         stage('Update value in helm-chart') {
-//             steps {
-// 				withCredentials([usernamePassword(credentialsId: 'github', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-//     bat """
-//         if exist ${helmRepo} rmdir /s /q ${helmRepo}
-//         git clone ${appConfigRepo} --branch ${appConfigBranch}
-//         cd ${helmRepo}
-        
-//         powershell -Command "(Get-Content ${helmValueFile}) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content ${helmValueFile}"
-        
-//         git add . 
-//         git commit -m "Update to version ${version}"
-//         git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/Nino610/ConfigTestGitops.git
-        
-//         cd ..
-//         if exist ${helmRepo} rmdir /s /q ${helmRepo}
-//     """
-// }
-
-// 				}				
-//             }
         }
     }
