@@ -42,9 +42,8 @@ pipeline {
                     docker.withRegistry( DOCKER_REGISTRY, dockerhubAccount ) {
                        app.push(version)
                     }
-
-                    // sh "docker rmi ${DOCKER_IMAGE_NAME} -f"
-                    // sh "docker rmi ${DOCKER_IMAGE}:${version} -f"
+                    bat "docker rmi ${DOCKER_IMAGE_NAME} -f"
+                    bat "docker rmi ${DOCKER_IMAGE}:${version} -f"
                     echo "build và push xong rồi"
                 }
             }
