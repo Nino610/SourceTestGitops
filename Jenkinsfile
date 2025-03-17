@@ -62,7 +62,7 @@ pipeline {
         
         git add . 
         git commit -m "Update to version ${version}"
-        git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/rockman88v/app-helmchart.git
+        git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/Nino610/ConfigTestGitops.git
         
         cd ..
         if exist ${helmRepo} rmdir /s /q ${helmRepo}
