@@ -53,17 +53,23 @@ pipeline {
         stage('Update value in helm-chart') {
             steps {
 				withCredentials([usernamePassword(credentialsId: 'github', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-				sh """#!/bin/bash
-					   [[ -d ${helmRepo} ]] && rm -r ${helmRepo}
-					   git clone ${appConfigRepo} --branch ${appConfigBranch}
-					   cd ${helmRepo}
-					   sed -i 's|  tag: .*|  tag: "${version}"|' ${helmValueFile}
-					   git add . ; git commit -m "Update to version ${version}";git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/Nino610/SourceTestGitops
-					   cd ..
-					   [[ -d ${helmRepo} ]] && rm -r ${helmRepo}
-					   """		
+    bat """
+        if exist ${helmRepo} rmdir /s /q ${helmRepo}
+        git clone ${appConfigRepo} --branch ${appConfigBranch}
+        cd ${helmRepo}
+        
+        powershell -Command "(Get-Content ${helmValueFile}) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content ${helmValueFile}"
+        
+        git add . 
+        git commit -m "Update to version ${version}"
+        git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/rockman88v/app-helmchart.git
+        
+        cd ..
+        if exist ${helmRepo} rmdir /s /q ${helmRepo}
+    """
+}
+
 				}				
             }
         }
     }
-}
