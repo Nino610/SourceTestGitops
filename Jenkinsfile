@@ -60,16 +60,16 @@ stage('Update value in helm-chart') {
                 git clone ${appConfigRepo} --branch ${appConfigBranch}
                 cd ${helmRepo}
 
-                REM Kiểm tra sự tồn tại của tệp app-demo-value.yaml trong thư mục app-demo
-                if exist app-demo/app-demo-value.yaml (
-                    REM Nếu tệp tồn tại, thay thế giá trị tag
-                    powershell -Command "(Get-Content app-demo/app-demo-value.yaml) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content app-demo/app-demo-value.yaml"
-                ) else (
-                    REM Nếu tệp không tồn tại, thông báo và dừng pipeline
-                    echo Tệp app-demo/app-demo-value.yaml không tồn tại!
-                    exit /b 1
-                )
-
+                // REM Kiểm tra sự tồn tại của tệp app-demo-value.yaml trong thư mục app-demo
+                // if exist app-demo/app-demo-value.yaml (
+                //     REM Nếu tệp tồn tại, thay thế giá trị tag
+                //     powershell -Command "(Get-Content app-demo/app-demo-value.yaml) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content app-demo/app-demo-value.yaml"
+                // ) else (
+                //     REM Nếu tệp không tồn tại, thông báo và dừng pipeline
+                //     echo Tệp app-demo/app-demo-value.yaml không tồn tại!
+                //     exit /b 1
+                // )
+                powershell -Command "(Get-Content app-demo/app-demo-value.yaml) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content app-demo/value.yaml"
                 REM Thêm các thay đổi vào git, commit và push
                 git add .
                 git commit -m "Update to version ${version}"
