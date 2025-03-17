@@ -36,8 +36,8 @@ pipeline {
         stage('Build And Push Docker Image') {
             steps {
                 script {
-                    // sh "git reset --hard"
-                    // sh "git clean -f"                    
+                    bat "git reset --hard"
+                    bat "git clean -f"                    
 					app = docker.build(DOCKER_IMAGE_NAME, dockerBuildCommand)
                     docker.withRegistry( DOCKER_REGISTRY, dockerhubAccount ) {
                        app.push(version)
