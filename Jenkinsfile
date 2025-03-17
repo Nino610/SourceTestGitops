@@ -53,7 +53,8 @@ pipeline {
         stage('Update value in helm-chart') {
             steps {
 				withCredentials([usernamePassword(credentialsId: 'github', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-				sh """#!/bin/bash
+				// sh """#!/bin/bash
+                bat """#!/bin/bash
 					   [[ -d ${helmRepo} ]] && rm -r ${helmRepo}
 					   git clone ${appConfigRepo} --branch ${appConfigBranch}
 					   cd ${helmRepo}
