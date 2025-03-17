@@ -48,27 +48,64 @@ pipeline {
                 }
             }
         }
-
         stage('Update value in helm-chart') {
-            steps {
-				withCredentials([usernamePassword(credentialsId: 'github', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-    bat """
-        if exist ${helmRepo} rmdir /s /q ${helmRepo}
-        git clone ${appConfigRepo} --branch ${appConfigBranch}
-        cd ${helmRepo}
-        
-        powershell -Command "(Get-Content ${helmValueFile}) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content ${helmValueFile}"
-        
-        git add . 
-        git commit -m "Update to version ${version}"
-        git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/Nino610/ConfigTestGitops.git
-        
-        cd ..
-        if exist ${helmRepo} rmdir /s /q ${helmRepo}
-    """
+    steps {
+        withCredentials([usernamePassword(credentialsId: 'github', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+            bat """
+                REM Kiểm tra và xóa thư mục ${helmRepo} nếu đã tồn tại
+                if exist ${helmRepo} rmdir /s /q ${helmRepo}
+
+                REM Clone repo cấu hình
+                git clone ${appConfigRepo} --branch ${appConfigBranch}
+                cd ${helmRepo}
+
+                REM Kiểm tra nếu tệp ${helmValueFile} tồn tại trước khi thay đổi
+                if exist ${helmValueFile} (
+                    powershell -Command "(Get-Content ${helmValueFile}) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content ${helmValueFile}"
+                ) else (
+                    echo Tệp ${helmValueFile} không tồn tại!
+                    exit /b 1
+                )
+
+                REM Thêm các thay đổi vào git, commit và push
+                git add .
+                git commit -m "Update to version ${version}"
+
+                REM Pull trước khi push để tránh lỗi đồng bộ
+                git pull origin ${appConfigBranch}
+
+                REM Push lên remote
+                git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/Nino610/ConfigTestGitops.git
+
+                cd ..
+                REM Xóa thư mục ${helmRepo} sau khi sử dụng
+                if exist ${helmRepo} rmdir /s /q ${helmRepo}
+            """
+        }
+    }
 }
 
-				}				
-            }
+
+//         stage('Update value in helm-chart') {
+//             steps {
+// 				withCredentials([usernamePassword(credentialsId: 'github', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+//     bat """
+//         if exist ${helmRepo} rmdir /s /q ${helmRepo}
+//         git clone ${appConfigRepo} --branch ${appConfigBranch}
+//         cd ${helmRepo}
+        
+//         powershell -Command "(Get-Content ${helmValueFile}) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content ${helmValueFile}"
+        
+//         git add . 
+//         git commit -m "Update to version ${version}"
+//         git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/Nino610/ConfigTestGitops.git
+        
+//         cd ..
+//         if exist ${helmRepo} rmdir /s /q ${helmRepo}
+//     """
+// }
+
+// 				}				
+//             }
         }
     }
