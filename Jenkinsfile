@@ -49,21 +49,24 @@ pipeline {
             }
         }
         stage('Update value in helm-chart') {
+stage('Update value in helm-chart') {
     steps {
         withCredentials([usernamePassword(credentialsId: 'github', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
             bat """
                 REM Kiểm tra và xóa thư mục ${helmRepo} nếu đã tồn tại
                 if exist ${helmRepo} rmdir /s /q ${helmRepo}
 
-                REM Clone repo cấu hình
+                REM Clone repo cấu hình từ GitHub
                 git clone ${appConfigRepo} --branch ${appConfigBranch}
                 cd ${helmRepo}
 
-                REM Kiểm tra nếu tệp ${helmValueFile} tồn tại trước khi thay đổi
-                if exist ${helmValueFile} (
-                    powershell -Command "(Get-Content ${helmValueFile}) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content ${helmValueFile}"
+                REM Kiểm tra sự tồn tại của tệp app-demo-value.yaml trong thư mục app-demo
+                if exist app-demo/app-demo-value.yaml (
+                    REM Nếu tệp tồn tại, thay thế giá trị tag
+                    powershell -Command "(Get-Content app-demo/app-demo-value.yaml) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content app-demo/app-demo-value.yaml"
                 ) else (
-                    echo Tệp ${helmValueFile} không tồn tại!
+                    REM Nếu tệp không tồn tại, thông báo và dừng pipeline
+                    echo Tệp app-demo/app-demo-value.yaml không tồn tại!
                     exit /b 1
                 )
 
@@ -83,6 +86,8 @@ pipeline {
             """
         }
     }
+}
+
 }
 
 
