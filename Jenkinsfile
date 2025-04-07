@@ -54,15 +54,16 @@ stage('Update value in helm-chart') {
         withCredentials([usernamePassword(credentialsId: 'github', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
             bat """
                 @echo off
-                if exist "${helmRepo}" rmdir /s /q "${helmRepo}"
-                git clone ${appConfigRepo} --branch ${appConfigBranch}
-                cd ${helmRepo}
-                powershell -Command "(Get-Content ${helmValueFile}) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content ${helmValueFile}"
-                git add .
-                git commit -m "Update to version ${version}"
-                git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/Nino610/ConfigTestGitops.git
+                if exist "ConfigTestGitops" rmdir /s /q "ConfigTestGitops"
+                git clone https://github.com/Nino610/ConfigTestGitops.git --branch main
+                cd ConfigTestGitops
+                powershell -Command "if (Test-Path app-demo/values.yaml) { (Get-Content app-demo/values.yaml) -replace '  tag: .*', '  tag: \"v1.36\"' | Set-Content app-demo/values.yaml } else { exit 1 }"
+                git add app-demo/values.yaml
+                git commit -m "Update to version v1.36"
+                git pull --rebase origin main
+                git push https://%GIT_USERNAME%:%GIT_PASSWORD%@github.com/Nino610/ConfigTestGitops.git
                 cd ..
-                if exist "${helmRepo}" rmdir /s /q "${helmRepo}"
+                if exist "ConfigTestGitops" rmdir /s /q "ConfigTestGitops"
             """
         }
     }
