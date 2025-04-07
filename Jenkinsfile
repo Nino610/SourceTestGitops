@@ -70,11 +70,11 @@ stage('Update value in helm-chart') {
                 //     echo Tệp app-demo/app-demo-value.yaml không tồn tại!
                 //     exit /b 1
                 // )
-                powershell -Command "(Get-Content app-demo/app-demo-value.yaml) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content app-demo/value.yaml"
+                powershell -Command "(Get-Content app-demo/values.yaml) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content app-demo/values.yaml"
                 REM Thêm các thay đổi vào git, commit và push
                 git add .
                 git commit -m "Update to version ${version}"
-                echo ${version} 
+                echo  ${version} 
 
                 REM Pull trước khi push để tránh lỗi đồng bộ
                 git pull origin ${appConfigBranch}
