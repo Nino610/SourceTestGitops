@@ -52,34 +52,18 @@ pipeline {
 stage('Update value in helm-chart') {
     steps {
         withCredentials([usernamePassword(credentialsId: 'github', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-            script {
-                // Remove existing helm repo if exists
-                bat """
-                    [[ -d ${helmRepo} ]] && rm -r ${helmRepo}
-                    git clone ${appConfigRepo} --branch ${appConfigBranch}
-                    cd ${helmRepo}
-
-                    // Update the tag in values.yaml file
-                    powershell -Command "(Get-Content ${helmValueFile}) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content ${helmValueFile}"
-
-                    // Add changes and commit
-                    git add .
-                    git commit -m "Update to version ${version}"
-
-                    // Fetch the latest changes from remote repository
-                    git fetch origin ${appConfigBranch}
-
-                    // Merge the fetched changes into your local branch
-                    git merge origin/${appConfigBranch}
-
-                    // Push the changes to remote repository
-                    git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/Nino610/ConfigTestGitops.git
-                    cd ..
-                    
-                    // Clean up by removing the helm repo
-                    [[ -d ${helmRepo} ]] && rm -r ${helmRepo}
-                """
-            }
+            bat """
+                @echo off
+                if exist "${helmRepo}" rmdir /s /q "${helmRepo}"
+                git clone ${appConfigRepo} --branch ${appConfigBranch}
+                cd ${helmRepo}
+                powershell -Command "(Get-Content ${helmValueFile}) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content ${helmValueFile}"
+                git add .
+                git commit -m "Update to version ${version}"
+                git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/Nino610/ConfigTestGitops.git
+                cd ..
+                if exist "${helmRepo}" rmdir /s /q "${helmRepo}"
+            """
         }
     }
 }
