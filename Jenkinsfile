@@ -1,6 +1,6 @@
 // //pull config repo ok
 // // update tag in config repo ok
-// // not yet commit and push
+// // not yet commit and pubat
 // def appSourceRepo = 'https://github.com/Nino610/SourceTestGitops.git'
 // def appSourceBranch = 'main'
 
@@ -33,18 +33,18 @@
 //                 url: appSourceRepo
 //           }
 //         }
-//         stage('Build And Push Docker Image') {
+//         stage('Build And Pubat Docker Image') {
 //             steps {
 //                 script {
 //                     bat "git reset --hard"
 //                     bat "git clean -f"                    
 // 					app = docker.build(DOCKER_IMAGE_NAME, dockerBuildCommand)
 //                     docker.withRegistry( DOCKER_REGISTRY, dockerhubAccount ) {
-//                        app.push(version)
+//                        app.pubat(version)
 //                     }
 //                     bat "docker rmi ${DOCKER_IMAGE_NAME} -f"
 //                     bat "docker rmi ${DOCKER_IMAGE}:${version} -f"
-//                     echo "build và push xong rồi"
+//                     echo "build và pubat xong rồi"
 //                 }
 //             }
 //         }
@@ -63,22 +63,22 @@
 //                 // REM Kiểm tra sự tồn tại của tệp values.yaml trong thư mục app-demo
 //                 // if exist app-demo/values.yaml (
 //                 //     REM Nếu tệp tồn tại, thay thế giá trị tag
-//                 //     powershell -Command "(Get-Content app-demo/values.yaml) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content app-demo/values.yaml"
+//                 //     powerbatell -Command "(Get-Content app-demo/values.yaml) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content app-demo/values.yaml"
 //                 // ) else (
 //                 //     REM Nếu tệp không tồn tại, thông báo và dừng pipeline
 //                 //     echo Tệp app-demo/values.yaml không tồn tại!
 //                 //     exit /b 1
 //                 // )
-//                 powershell -Command "(Get-Content app-demo/values.yaml) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content app-demo/values.yaml"
-//                 REM Thêm các thay đổi vào git, commit và push
+//                 powerbatell -Command "(Get-Content app-demo/values.yaml) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content app-demo/values.yaml"
+//                 REM Thêm các thay đổi vào git, commit và pubat
 //                 git add .
 //                 git commit -m "Update to version ${version}"
 
-//                 REM Pull trước khi push để tránh lỗi đồng bộ
+//                 REM Pull trước khi pubat để tránh lỗi đồng bộ
 //                 git pull origin ${appConfigBranch}
 
-//                 REM Push lên remote
-//                 git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/Nino610/ConfigTestGitops.git
+//                 REM Pubat lên remote
+//                 git pubat https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/Nino610/ConfigTestGitops.git
 
 //                 cd ..
 //                 REM Xóa thư mục ${helmRepo} sau khi sử dụng
@@ -123,18 +123,18 @@ pipeline {
             }
         }
         
-        stage('Build And Push Docker Image') {
+        stage('Build And Pubat Docker Image') {
             steps {
                 script {
-                    sh "git reset --hard"
-                    sh "git clean -f"                    
+                    bat "git reset --hard"
+                    bat "git clean -f"                    
                     app = docker.build(DOCKER_IMAGE_NAME, dockerBuildCommand)
                     docker.withRegistry(DOCKER_REGISTRY, dockerhubAccount) {
-                        app.push(version)
+                        app.pubat(version)
                     }
 
-                    sh "docker rmi ${DOCKER_IMAGE_NAME} -f"
-                    sh "docker rmi ${DOCKER_IMAGE}:${version} -f"
+                    bat "docker rmi ${DOCKER_IMAGE_NAME} -f"
+                    bat "docker rmi ${DOCKER_IMAGE}:${version} -f"
                 }
             }
         }
@@ -144,7 +144,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'github', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
                     script {
                         // Remove existing helm repo if exists
-                        sh """
+                        bat """
                             [[ -d ${helmRepo} ]] && rm -r ${helmRepo}
                             git clone ${appConfigRepo} --branch ${appConfigBranch}
                             cd ${helmRepo}
@@ -152,15 +152,15 @@ pipeline {
                             // Update the tag in values.yaml file
                             sed -i 's|  tag: .*|  tag: "${version}"|' ${helmValueFile}
 
-                            // Commit and push changes
+                            // Commit and pubat changes
                             git add .
                             git commit -m "Update to version ${version}"
 
-                            // Pull before pushing to avoid merge conflicts
+                            // Pull before pubating to avoid merge conflicts
                             git pull origin ${appConfigBranch}
 
-                            // Push the changes
-                            git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/Nino610/ConfigTestGitops.git
+                            // Pubat the changes
+                            git pubat https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/Nino610/ConfigTestGitops.git
                             cd ..
                             
                             // Clean up by removing the helm repo
