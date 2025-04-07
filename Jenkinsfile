@@ -57,9 +57,9 @@ stage('Update value in helm-chart') {
                 if exist "ConfigTestGitops" rmdir /s /q "ConfigTestGitops"
                 git clone https://github.com/Nino610/ConfigTestGitops.git --branch main
                 cd ConfigTestGitops
-                powershell -Command "if (Test-Path app-demo/values.yaml) { (Get-Content app-demo/values.yaml) -replace '  tag: .*', '  tag: \"v1.36\"' | Set-Content app-demo/values.yaml } else { exit 1 }"
+                powershell -Command "if (Test-Path app-demo/values.yaml) { (Get-Content app-demo/values.yaml) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content app-demo/values.yaml } else { exit 1 }"
                 git add app-demo/values.yaml
-                git commit -m "Update to version v1.36"
+                git commit -m "Update to version ${version}"
                 git pull --rebase origin main
                 git push https://%GIT_USERNAME%:%GIT_PASSWORD%@github.com/Nino610/ConfigTestGitops.git
                 cd ..
