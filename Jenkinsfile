@@ -8,7 +8,7 @@ def appConfigRepo = 'https://github.com/Nino610/ConfigTestGitops.git'
 def appConfigBranch = 'main'
 def helmRepo = "app-helmchart"
 def helmChart = "app-demo"
-def helmValueFile = "app-demo/app-demo-value.yaml"
+def helmValueFile = "app-demo/values.yaml"
 
 def dockerhubAccount = 'dockerhub'
 def githubAccount = 'github'
@@ -60,16 +60,16 @@ stage('Update value in helm-chart') {
                 git clone ${appConfigRepo} --branch ${appConfigBranch}
                 cd ${helmRepo}
 
-                // REM Kiểm tra sự tồn tại của tệp app-demo-value.yaml trong thư mục app-demo
-                // if exist app-demo/app-demo-value.yaml (
+                // REM Kiểm tra sự tồn tại của tệp values.yaml trong thư mục app-demo
+                // if exist app-demo/values.yaml (
                 //     REM Nếu tệp tồn tại, thay thế giá trị tag
-                //     powershell -Command "(Get-Content app-demo/app-demo-value.yaml) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content app-demo/app-demo-value.yaml"
+                //     powershell -Command "(Get-Content app-demo/values.yaml) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content app-demo/values.yaml"
                 // ) else (
                 //     REM Nếu tệp không tồn tại, thông báo và dừng pipeline
-                //     echo Tệp app-demo/app-demo-value.yaml không tồn tại!
+                //     echo Tệp app-demo/values.yaml không tồn tại!
                 //     exit /b 1
                 // )
-                powershell -Command "(Get-Content app-demo/app-demo-value.yaml) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content app-demo/value.yaml"
+                powershell -Command "(Get-Content app-demo/values.yaml) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content app-demo/value.yaml"
                 REM Thêm các thay đổi vào git, commit và push
                 git add .
                 git commit -m "Update to version ${version}"
