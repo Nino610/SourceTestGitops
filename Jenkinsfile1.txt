@@ -1,0 +1,82 @@
+def appSourceRepo = 'https://github.com/Nino610/SourceTestGitops.git'
+def appSourceBranch = 'main'
+
+def appConfigRepo = 'https://github.com/Nino610/ConfigTestGitops.git'
+def appConfigBranch = 'main'
+def helmRepo = "app-helmchart"
+def helmChart = "app-demo"
+def helmValueFile = "app-demo/values.yaml"
+
+def dockerhubAccount = 'dockerhub'
+def githubAccount = 'github'
+
+dockerBuildCommand = './'
+def version = "v1.${BUILD_NUMBER}"
+
+pipeline {
+    agent any    
+
+    environment {
+        DOCKER_REGISTRY = 'https://registry-1.docker.io'
+        DOCKER_IMAGE_NAME = "anhdt172/test-gitops"
+        DOCKER_IMAGE = "registry-1.docker.io/${DOCKER_IMAGE_NAME}"
+    }
+
+    stages {        
+        stage('Checkout project') {
+            steps {
+                git branch: appSourceBranch,
+                    credentialsId: githubAccount,
+                    url: appSourceRepo
+            }
+        }
+        
+        stage('Build And Push Docker Image') {
+            steps {
+                script {
+                    sh "git reset --hard"
+                    sh "git clean -f"                    
+                    app = docker.build(DOCKER_IMAGE_NAME, dockerBuildCommand)
+                    docker.withRegistry(DOCKER_REGISTRY, dockerhubAccount) {
+                        app.push(version)
+                    }
+
+                    sh "docker rmi ${DOCKER_IMAGE_NAME} -f"
+                    sh "docker rmi ${DOCKER_IMAGE}:${version} -f"
+                }
+            }
+        }
+
+        stage('Update value in helm-chart') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'github', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                    script {
+                        // Remove existing helm repo if exists
+                        sh """
+                            [[ -d ${helmRepo} ]] && rm -r ${helmRepo}
+                            git clone ${appConfigRepo} --branch ${appConfigBranch}
+                            cd ${helmRepo}
+                            
+                            // Update the tag in values.yaml file
+                            sed -i 's|  tag: .*|  tag: "${version}"|' ${helmValueFile}
+
+                            // Commit and push changes
+                            git add .
+                            git commit -m "Update to version ${version}"
+
+                            // Pull before pushing to avoid merge conflicts
+                            git pull origin ${appConfigBranch}
+
+                            // Push the changes
+                            git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/Nino610/ConfigTestGitops.git
+                            cd ..
+                            
+                            // Clean up by removing the helm repo
+                            [[ -d ${helmRepo} ]] && rm -r ${helmRepo}
+                        """
+                    }
+                }
+            }
+        }
+    }
+}
