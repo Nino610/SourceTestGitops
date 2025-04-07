@@ -52,38 +52,43 @@ pipeline {
 stage('Update value in helm-chart') {
     steps {
         withCredentials([usernamePassword(credentialsId: 'github', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-            script {
-                // Remove existing helm repo if exists
-                bat """
-                    [[ -d ${helmRepo} ]] && rm -r ${helmRepo}
-                    git clone ${appConfigRepo} --branch ${appConfigBranch}
-                    cd ${helmRepo}
+            bat """
+                REM Kiểm tra và xóa thư mục ${helmRepo} nếu đã tồn tại
+                if exist ${helmRepo} rmdir /s /q ${helmRepo}
 
-                    // Update the tag in values.yaml file
-                    sed -i 's|  tag: .*|  tag: "${version}"|' ${helmValueFile}
+                REM Clone repo cấu hình từ GitHub
+                git clone ${appConfigRepo} --branch ${appConfigBranch}
+                echo 'clone xong'
+                cd ${helmRepo}
 
-                    // Add changes and commit
-                    git add .
-                    git commit -m "Update to version ${version}"
+                // REM Kiểm tra sự tồn tại của tệp values.yaml trong thư mục app-demo
+                // if exist app-demo/values.yaml (
+                //     REM Nếu tệp tồn tại, thay thế giá trị tag
+                //     powershell -Command "(Get-Content app-demo/values.yaml) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content app-demo/values.yaml"
+                // ) else (
+                //     REM Nếu tệp không tồn tại, thông báo và dừng pipeline
+                //     echo Tệp app-demo/app-demo-value.yaml không tồn tại!
+                //     exit /b 1
+                // )
+                powershell -Command "(Get-Content app-demo/.yaml) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content app-demo/values.yaml"
+                REM Thêm các thay đổi vào git, commit và push
+                git add .
+                git commit -m "Update to version ${version}"
+                echo  ${version} 
 
-                    // Fetch the latest changes from remote repository
-                    git fetch origin ${appConfigBranch}
+                REM Pull trước khi push để tránh lỗi đồng bộ
+                git pull origin ${appConfigBranch}
 
-                    // Merge the fetched changes into your local branch
-                    git merge origin/${appConfigBranch}
+                REM Push lên remote
+                git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/Nino610/ConfigTestGitops.git
 
-                    // Push the changes to remote repository
-                    git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/Nino610/ConfigTestGitops.git
-                    cd ..
-                    
-                    // Clean up by removing the helm repo
-                    [[ -d ${helmRepo} ]] && rm -r ${helmRepo}
-                """
-            }
+                cd ..
+                REM Xóa thư mục ${helmRepo} sau khi sử dụng
+                if exist ${helmRepo} rmdir /s /q ${helmRepo}
+            """
         }
     }
 }
-
 
         }
     }

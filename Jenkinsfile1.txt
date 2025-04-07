@@ -60,7 +60,7 @@ stage('Update value in helm-chart') {
                     cd ${helmRepo}
 
                     // Update the tag in values.yaml file
-                    sed -i 's|  tag: .*|  tag: "${version}"|' ${helmValueFile}
+                    powershell -Command "(Get-Content ${helmValueFile}) -replace '  tag: .*', '  tag: \"${version}\"' | Set-Content ${helmValueFile}"
 
                     // Add changes and commit
                     git add .
