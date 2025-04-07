@@ -54,7 +54,7 @@ stage('Update value in helm-chart') {
         withCredentials([usernamePassword(credentialsId: 'github', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
             script {
                 // Remove existing helm repo if exists
-                sh """
+                bat """
                     [[ -d ${helmRepo} ]] && rm -r ${helmRepo}
                     git clone ${appConfigRepo} --branch ${appConfigBranch}
                     cd ${helmRepo}
